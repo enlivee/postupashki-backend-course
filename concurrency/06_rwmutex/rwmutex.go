@@ -1,8 +1,8 @@
 package rwmutex
 
 import (
-	"sync/atomic"
 	"primitives/internal/futex"
+	"sync/atomic"
 )
 
 const writer = 1 << 31
@@ -13,13 +13,13 @@ type RWMutex struct {
 	state uint32
 }
 
-// 31 писатель 
+// 31 писатель
 // 0-30 читатели
 
 func (rw *RWMutex) RLock() {
 	for {
 		state := atomic.LoadUint32(&rw.state)
-		if state & writer != 0 { // если там не писатель, то засыпаем
+		if state&writer != 0 { // если там не писатель, то засыпаем
 			futex.Wait(&rw.state, state)
 		} else { // не писатель, увеличиваем количество читателей
 			if atomic.CompareAndSwapUint32(&rw.state, state, state+1) {
@@ -32,7 +32,7 @@ func (rw *RWMutex) RLock() {
 func (rw *RWMutex) RUnlock() {
 	for {
 		state := atomic.LoadUint32(&rw.state)
-		if state & readers == 0 {
+		if state&readers == 0 {
 			panic("unlock без lock крута") // 0 читателей, кого тут разблокировать?
 		}
 		if atomic.CompareAndSwapUint32(&rw.state, state, state-1) {
@@ -41,7 +41,7 @@ func (rw *RWMutex) RUnlock() {
 			}
 			return
 		}
-	}	
+	}
 }
 
 func (rw *RWMutex) Lock() {
@@ -63,7 +63,7 @@ func (rw *RWMutex) Lock() {
 
 func (rw *RWMutex) Unlock() {
 	old := atomic.SwapUint32(&rw.state, 0)
-	if old & writer == 0 {
+	if old&writer == 0 {
 		panic("анлок без лока")
 	}
 	futex.WakeAll(&rw.state)

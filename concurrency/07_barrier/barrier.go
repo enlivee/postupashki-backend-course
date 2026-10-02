@@ -18,21 +18,22 @@ func New(n int) *Barrier {
 }
 
 func (b *Barrier) Wait() {
-	r := atomic.LoadUint32(&b.round) // текущий раунд
+	r := atomic.LoadUint32(&b.round)     // текущий раунд
 	n := atomic.AddUint32(&b.arrived, 1) // увеличиваем счетчик на 1
-	if n == b.need { // последний
+	if n == b.need {                     // последний
 		atomic.StoreUint32(&b.arrived, 0) // обнуляем счетчик
-		atomic.AddUint32(&b.round, 1) // раунд++
-		futex.WakeAll(&b.round) // будим спящих на раунде
+		atomic.AddUint32(&b.round, 1)     // раунд++
+		futex.WakeAll(&b.round)           // будим спящих на раунде
 		return
 	}
 
 	// не последний, поэтому ждем
-	for atomic.LoadUint32(&b.round) == r{
+	for atomic.LoadUint32(&b.round) == r {
 		futex.Wait(&b.round, r)
 	}
 }
-// hw1_concurrency % make barrier                  
+
+// hw1_concurrency % make barrier
 // 07_barrier/barrier.go
 // go vet ./07_barrier/
 // go test ./07_barrier/

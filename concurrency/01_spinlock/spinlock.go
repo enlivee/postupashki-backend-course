@@ -14,7 +14,7 @@ type Spinlock struct {
 
 func (s *Spinlock) Lock() {
 	for !s.locked.CompareAndSwap(false, true) { // крутимся пока занят и не получается поменять
-										       // типа долбимся в дверь в туалет в попытках открыть
+		// типа долбимся в дверь в туалет в попытках открыть
 		continue
 	}
 }
@@ -22,7 +22,7 @@ func (s *Spinlock) Lock() {
 func (s *Spinlock) TryLock() bool {
 	if s.locked.CompareAndSwap(false, true) { // проверка на свободу и сразу замена на занято
 		return true
-	} 
+	}
 	return false
 }
 
@@ -41,19 +41,19 @@ func (s *Spinlock) Unlock() {
 // как я понял:
 // плохой спинлок отбирает. хороший: проверяет и ждет... ждет...
 
-
 type TTAS struct {
 	locked atomic.Bool
 }
 
 // ну вот во втором цикле мы ожидаем пока 100% не будет свободно
-// и далее попытка блока. 
+// и далее попытка блока.
 
 func (s *TTAS) Lock() {
 	for { // вечный цикл
-		for s.locked.Load() {} // пока занято
+		for s.locked.Load() {
+		} // пока занято
 		if s.TryLock() { // попытка блока
-			return 
+			return
 		}
 	}
 }
@@ -72,6 +72,7 @@ func (s *TTAS) Unlock() {
 		panic("Unlock без Lock")
 	}
 }
+
 // concurrency % make 01_spinlock
 // 01_spinlock/spinlock.go
 // go vet ./01_spinlock/

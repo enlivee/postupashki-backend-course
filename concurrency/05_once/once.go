@@ -8,6 +8,7 @@ import (
 type Once struct {
 	state uint32
 }
+
 // 0 не начато
 // 1 кто-то выполняет f()
 // 2 готово
@@ -30,8 +31,8 @@ func (o *Once) Do(f func()) {
 			futex.Wait(&o.state, state) // ждем пока выполняют f()
 		case 0:
 			if atomic.CompareAndSwapUint32(&o.state, 0, 1) { // победитель
-				defer futex.WakeAll(&o.state) // будим тоже в конце, так как все готово
-				defer atomic.StoreUint32(&o.state, 2) // 
+				defer futex.WakeAll(&o.state)         // будим тоже в конце, так как все готово
+				defer atomic.StoreUint32(&o.state, 2) //
 				// если у нас получилось занять местечко для выполнения f()
 				// то в конце мы переведем в состояние 2 для статуса готовности
 				f() // сама функия

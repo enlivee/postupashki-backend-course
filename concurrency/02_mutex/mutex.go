@@ -14,6 +14,7 @@ const (
 type Mutex struct {
 	state uint32
 }
+
 // 0 свободен free
 // 1 занят и никто не ждет held
 // 2 занят и кто-то спит в ожидании contended
@@ -23,7 +24,7 @@ func (m *Mutex) Lock() {
 	if atomic.CompareAndSwapUint32(&m.state, free, held) {
 		return
 	}
-	// rotation iteration вращение 
+	// rotation iteration вращение
 	for i := 0; i < 30; i++ {
 		if atomic.CompareAndSwapUint32(&m.state, free, held) {
 			return
@@ -36,7 +37,7 @@ func (m *Mutex) Lock() {
 			return
 		}
 		atomic.CompareAndSwapUint32(&m.state, held, contended) // теперь есть спящие
-		futex.Wait(&m.state, contended) // парковка
+		futex.Wait(&m.state, contended)                        // парковка
 	}
 }
 

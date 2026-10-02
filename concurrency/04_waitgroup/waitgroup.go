@@ -1,8 +1,8 @@
 package waitgroup
 
 import (
-	"sync/atomic"
 	"primitives/internal/futex"
+	"sync/atomic"
 )
 
 type WaitGroup struct {

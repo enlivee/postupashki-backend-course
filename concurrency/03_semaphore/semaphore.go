@@ -1,8 +1,8 @@
 package semaphore
 
 import (
-	"sync/atomic"
 	"primitives/internal/futex"
+	"sync/atomic"
 )
 
 type Semaphore struct {
@@ -29,17 +29,16 @@ func (s *Semaphore) Acquire() {
 		}
 	} // медленно
 	for {
-		v = atomic.LoadUint32(&s.permits) // снова загружаем 
+		v = atomic.LoadUint32(&s.permits) // снова загружаем
 		if v > 0 {
 			if atomic.CompareAndSwapUint32(&s.permits, v, v-1) { // отлично, выходим
 				return
-			} 
+			}
 		} else {
 			futex.Wait(&s.permits, 0) // засыпаем
 		}
 	}
 }
-
 
 func (s *Semaphore) TryAcquire() bool {
 	v := atomic.LoadUint32(&s.permits)
